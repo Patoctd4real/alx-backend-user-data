@@ -11,7 +11,7 @@ import os
 # PII_FIELDS = ('name', 'email', 'phone', 'ssn', 'password')
 
 
-def obtain_db() -> mysql.connector.connection.MySQLConnection:
+def get_db() -> mysql.connector.connection.MySQLConnection:
     """Returns a connector to the database"""
     db_name = os.getenv("PERSONAL_DATA_DB_NAME")
     db_username = os.getenv("PERSONAL_DATA_DB_USERNAME")
@@ -42,14 +42,14 @@ with open('user_data.csv', 'r') as f:
                 break
 
 
-def obtain_db() -> logging.Logger:
+def get_logger() -> logging.Logger:
     """returns a logger for logging user data"""
     user_logger = logging.Logger("user_data")
     user_logger.setLevel(logging.INFO)
     user_logger.propagate = False
 
     handler = logging.StreamHandler()
-    handler.setFormatter(RedaractingFormatter(PII_FIELDS))
+    handler.setFormatter(RedactingFormatter(PII_FIELDS))
     user_logger.addHandler(handler)
     return user_logger
 
@@ -64,7 +64,7 @@ def filter_datum(fields: List[str], redaction: str,
     return temp
 
 
-class RedaractingFormatter(logging.Formatter):
+class RedactingFormatter(logging.Formatter):
     """ Redacting Formatter class
     """
 
@@ -74,7 +74,7 @@ class RedaractingFormatter(logging.Formatter):
 
     def __init__(self, fields: List[str]):
         """inherits init from Formatter"""
-        super(RedaractingFormatter, self).__init__(self.FORMAT)
+        super(RedactingFormatter, self).__init__(self.FORMAT)
         self.fields = fields
 
     def format(self, record: logging.LogRecord) -> str:
@@ -93,13 +93,13 @@ def main():
     rows from the 'users' table, filtering
     personal data.
     """
-    db = obtain_db()
+    db = get_db()
     cursor = db.cursor()
 
     cursor.execute('SELECT * FROM users;')
     rows = cursor.fetchall()
 
-    logger = obtain_db()
+    logger = get_logger()
     field_names = [i[0] for i in cursor.description]
 
     for row in rows:
